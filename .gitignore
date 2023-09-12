@@ -1,0 +1,37 @@
+*~
+\#*#
+.DS_Store
+.idea
+*.log
+tmp/
+
+# universal tags
+.tags/
+.tags
+
+# tex tmp files
+*.aux
+*.log
+_minted-*/
+*.synctex.gz
+*.nav
+*.toc
+*.vrb
+*.snm
+*.out
+.auctex-auto/
+
+*.o
+*.ko
+*.lo
+*.slo
+*.obj
+*.gch
+*.pch
+*.so
+*.dylib
+*.lai
+*.la
+*.a
+*.lib
+compile_commands.json
