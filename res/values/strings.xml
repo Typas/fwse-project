@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="hello">Hello World, RemoteLightActivity!</string>
+    <string name="app_name">RemoteLight</string>
+    <string name="power_on">Power On</string>
+    <string name="power_off">Power Off</string>
+
+</resources>
