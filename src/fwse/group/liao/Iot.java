@@ -93,33 +93,6 @@ public class Iot {
 }
 
 class Utility {
-	// public static byte[][] splitBytes(final byte[] array, final int
-	// chunkSize) {
-	// final int length = array.length;
-	// final byte[][] dest = new byte[(length + chunkSize - 1) / chunkSize][];
-	// int destIndex = 0;
-	// int stopIndex = 0;
-
-	// for (int index = 0; index + chunkSize <= length; index += chunkSize) {
-	// stopIndex += chunkSize;
-	// dest[destIndex] = Arrays.copyOfRange(array, index, stopIndex);
-	// ++destIndex;
-	// }
-
-	// if (stopIndex < length) {
-	// dest[destIndex] = Arrays.copyOfRange(array, stopIndex, length);
-	// }
-
-	// return dest;
-	// }
-
-	// public static byte[] mergeBytes(final byte[] first, final byte[] second)
-	// {
-	// final byte[] dest = Arrays.copyOf(first, first.length + second.length);
-	// System.arraycopy(second, 0, dest, first.length, second.length);
-	// return dest;
-	// }
-
 	static String serializeBundle(final Bundle bundle) {
 		String base64 = null;
 		final Parcel parcel = Parcel.obtain();
