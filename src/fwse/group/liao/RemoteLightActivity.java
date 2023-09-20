@@ -20,22 +20,33 @@ import android.widget.Button;
 
 public class RemoteLightActivity extends Activity {
 	/** Called when the activity is first created. */
+    public final int CMD_RELAY_OFF = 0;
+    public final int CMD_RELAY_ON = 1;
 	private IIotService iotService = null;
 	private final String TAG = "RemoteLightActivity";
+    private final int READ_INTERVAL = 100; // in ms
     private Button on, off;
-    private Handler mUIHandler = new Handler(Looper.getMainLooper()) {
+    private final Handler mUIHandler = new Handler(Looper.getMainLooper()) {
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
             switch (msg.what) {
-                case IotService.RECV_START:
+                default:
                     break;
-                case IotService.RECV_END:
-                    break;
-                case IotService.SEND_SUCCESS:
-                    break;
-                case IotService.SEND_FAIL:
-                    break;
+            }
+        }
+    };
+
+    private final Runnable mRun = new Runnable() {
+        @Override
+        public void run() {
+            try {
+                Bundle data = iotService.receive();
+                int cmd = data.getInt("CMD");
+            } catch (RemoteException e) {
+                // nothing, just another lazy period
+            } catch (Exception e) {
+                Log.e(TAG, e.toString());
             }
         }
     };
@@ -77,11 +88,13 @@ public class RemoteLightActivity extends Activity {
 		setContentView(R.layout.main);
         findViews();
         setListeners();
+        handler.postDelayed(mRun, READ_INTERVAL);
 	}
 
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
+        handler.removeCallbacks(mRun); // not necessary
 		unbindService(connection);
 		Log.d(TAG, "disconnected");
 	}
