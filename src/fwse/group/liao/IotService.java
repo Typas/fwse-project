@@ -6,6 +6,7 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.RemoteException;
@@ -62,49 +63,7 @@ public class IotService extends Service {
 	public void onCreate() {
 		super.onCreate();
 		if (Iot.open() == false)
-			onDestroy();
+			this.onDestroy();
 		Log.d(TAG, "created");
 	}
-	
-	Handler mHandler = new Handler() {
-		@Override
-		public void handleMessage(Message msg) {
-			// parse message and set it
-			Bundle bundle = msg.getData();
-			// FIXME: action depends on command
-			boolean command = bundle.getBoolean("power on");
-			if (command == true) {
-				// turn on
-				try {
-				Relay.open();
-				} catch (IOException e) {
-					Log.e(TAG, e.toString());
-					super.handleMessage(msg);
-					return;
-				}
-				Relay.setOn();
-				try {
-					Relay.close();
-				} catch (IOException e) {
-					Log.e(TAG, e.toString());
-				}
-			} else {
-				// turn off
-				try {
-				Relay.open();
-				} catch (IOException e) {
-					Log.e(TAG, e.toString());
-					super.handleMessage(msg);
-					return;
-				}
-				Relay.setOff();
-				try {
-					Relay.close();
-				} catch (IOException e) {
-					Log.e(TAG, e.toString());
-				}
-			}
-			super.handleMessage(msg);
-		}
-	};
 }

@@ -15,10 +15,10 @@
  */
 
 #include <assert.h>
+#include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <stddef.h>
 
 #include <jni.h>
 extern "C" {
@@ -44,19 +44,23 @@ static jboolean iot_exit(JNIEnv *env, jobject thiz) {
 }
 
 static jboolean iot_join(JNIEnv *env, jobject thiz) {
-    /* nop */
-    return JNI_TRUE;
+    if (bt_join() < 0)
+        return JNI_FALSE;
+    else
+        return JNI_TRUE;
 }
 
 static jboolean iot_leave(JNIEnv *env, jobject thiz) {
-    /* nop */
-    return JNI_TRUE;
+    if (bt_leave() < 0)
+        return JNI_FALSE;
+    else
+        return JNI_TRUE;
 }
 
 static jboolean iot_recv(JNIEnv *env, jobject thiz, jbyteArray jbuffer) {
     size_t read_bytes = 0;
     jbyte *jbuf = env->GetByteArrayElements(jbuffer, NULL);
-    char *buf = (char*)jbuf;
+    char *buf = (char *)jbuf;
     size_t len = env->GetArrayLength(jbuffer);
     int single_buf;
     for (read_bytes = 0; read_bytes < len; ++read_bytes) {
@@ -78,7 +82,7 @@ static jboolean iot_recv(JNIEnv *env, jobject thiz, jbyteArray jbuffer) {
 static jboolean iot_send(JNIEnv *env, jobject thiz, jbyteArray jbuffer) {
     ssize_t written_bytes = 0;
     jbyte *jbuf = env->GetByteArrayElements(jbuffer, NULL);
-    char *buf = (char*)jbuf;
+    char *buf = (char *)jbuf;
     size_t len = env->GetArrayLength(jbuffer);
     written_bytes = bt_write(buf, len);
     env->ReleaseByteArrayElements(jbuffer, jbuf, JNI_ABORT);

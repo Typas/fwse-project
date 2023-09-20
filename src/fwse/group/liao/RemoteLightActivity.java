@@ -22,12 +22,32 @@ public class RemoteLightActivity extends Activity {
 	/** Called when the activity is first created. */
 	private IIotService iotService = null;
 	private final String TAG = "RemoteLightActivity";
+    private Button on, off;
+    private Handler mUIHandler = new Handler(Looper.getMainLooper()) {
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            switch (msg.what) {
+                case IotService.RECV_START:
+                    break;
+                case IotService.RECV_END:
+                    break;
+                case IotService.SEND_SUCCESS:
+                    break;
+                case IotService.SEND_FAIL:
+                    break;
+            }
+        }
+    };
 
 	private ServiceConnection connection = new ServiceConnection() {
 		@Override
 		public void onServiceConnected(ComponentName name, IBinder service) {
 			iotService = IIotService.Stub.asInterface(service);
 			Log.d(TAG, "connect iot");
+            if (iotService == null) {
+                Log.e(TAG, "cannot connect");
+            }
 		}
 
 		@Override
@@ -37,6 +57,16 @@ public class RemoteLightActivity extends Activity {
 		}
 	};
 
+    private void findViews() {
+		on = (Button) findViewById(R.id.on);
+		off = (Button) findViewById(R.id.off);
+    }
+
+    private void setListeners() {
+		on.setOnClickListener(lightOnListener);
+		off.setOnClickListener(lightOffListener);
+    }
+
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -45,32 +75,22 @@ public class RemoteLightActivity extends Activity {
 				connection, Context.BIND_AUTO_CREATE);
 		Log.d(TAG, "connection bound");
 		setContentView(R.layout.main);
-		Button on = (Button) findViewById(R.id.on);
-		on.setOnClickListener(lightOnListener);
-		Button off = (Button) findViewById(R.id.off);
-		off.setOnClickListener(lightOffListener);
+        findViews();
+        setListeners();
 	}
 
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
 		unbindService(connection);
+		Log.d(TAG, "disconnected");
 	}
 
 	private OnClickListener lightOnListener = new OnClickListener() {
 		@Override
 		public void onClick(View v) {
 			setTitle("Power On");
-			try {
-				Relay.open();
-			} catch (IOException e) {
-				return;
-			}
-			Relay.setOn();
-			try {
-				Relay.close();
-			} catch (IOException e) {
-			}
+            relayCtrl(true);
 		}
 	};
 
@@ -78,16 +98,22 @@ public class RemoteLightActivity extends Activity {
 		@Override
 		public void onClick(View v) {
 			setTitle("Power Off");
-			try {
-				Relay.open();
-			} catch (IOException e) {
-				return;
-			}
-			Relay.setOff();
-			try {
-				Relay.close();
-			} catch (IOException e) {
-			}
+            relayCtrl(false);
 		}
 	};
+
+    private boolean relayCtrl(boolean on) {
+        boolean ret = true;
+        try {
+            Relay.open();
+            if (on == true)
+                ret = Relay.setOn();
+            else
+                ret = Relay.setOff();
+            Relay.close();
+        } catch (IOException e) {
+            return false;
+        }
+        return ret;
+    }
 }
