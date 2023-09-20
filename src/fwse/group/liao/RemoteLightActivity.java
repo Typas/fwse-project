@@ -43,6 +43,32 @@ public class RemoteLightActivity extends Activity {
             try {
                 Bundle data = iotService.receive();
                 int cmd = data.getInt("CMD");
+                switch (cmd) {
+                    case CMD_RELAY_OFF:
+                        int retry = 0;
+                        while(!relayCtrl(false)) {
+                            retry += 1;
+                            sleep(10);
+                            if (retry > 10) {
+                                Log.e(TAG, "cannot turn off relay");
+                                break;
+                            }
+                        }
+                        break;
+                    case CMD_RELAY_ON:
+                        int retry = 0;
+                        while(!relayCtrl(true)) {
+                            retry += 1;
+                            sleep(10);
+                            if (retry > 10) {
+                                Log.e(TAG, "cannot turn on relay");
+                                break;
+                            }
+                        }
+                        break;
+                    default:
+                        break;
+                }
             } catch (RemoteException e) {
                 // nothing, just another lazy period
             } catch (Exception e) {
