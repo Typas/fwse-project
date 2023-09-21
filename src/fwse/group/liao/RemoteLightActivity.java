@@ -3,20 +3,14 @@ package fwse.group.liao;
 import java.io.IOException;
 
 import fwse.group.liao.R;
-import fwse.group.liao.IotService;
+import fwse.group.liao.Iot;
 import fwse.group.liao.Relay;
 import android.app.Activity;
-import android.content.ComponentName;
-import android.content.Context;
-import android.content.Intent;
-import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
-import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
-import android.os.RemoteException;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -26,7 +20,6 @@ public class RemoteLightActivity extends Activity {
 	/** Called when the activity is first created. */
 	public final int CMD_RELAY_OFF = 0;
 	public final int CMD_RELAY_ON = 1;
-	private IIotService iotService = null;
 	private final String TAG = "RemoteLightActivity";
 	private final int READ_INTERVAL = 300; // in milliseconds
 	private boolean isOn = false;
@@ -55,11 +48,7 @@ public class RemoteLightActivity extends Activity {
 		public void run() {
 			try {
 				Log.d(TAG, "run(): start loop run");
-				if (iotService == null) {
-					Log.w(TAG, "run(): cannot start iotService");
-					return;
-				}
-				Bundle data = iotService.receive();
+				Bundle data = Iot.receive();
 				Bundle echo = new Bundle();
 				Log.d(TAG, "run(): received data");
 				int cmd = data.getInt("CMD");
@@ -79,7 +68,7 @@ public class RemoteLightActivity extends Activity {
 					isOn = (retry <= 10) ? false : isOn;
 					echo.putBoolean("SUCCESS", retry <= 10);
 					echo.putBoolean("INFO", isOn);
-					iotService.send(echo);
+					Iot.send(echo);
 					break;
 				case CMD_RELAY_ON:
 					mUIHandler.sendEmptyMessage(CMD_RELAY_ON);
@@ -94,35 +83,18 @@ public class RemoteLightActivity extends Activity {
 					isOn = (retry <= 10) ? true : isOn;
 					echo.putBoolean("SUCCESS", retry <= 10);
 					echo.putBoolean("INFO", isOn);
-					iotService.send(echo);
+					Iot.send(echo);
 					break;
 				default:
 					break;
 				}
 				Log.d(TAG, "End one run in success state");
-			} catch (RemoteException e) {
+			} catch (IOException e) {
 				// nothing, just another lazy period
 				Log.d(TAG, "End one run in no get state");
 			} catch (Exception e) {
 				Log.e(TAG, e.toString());
 			}
-		}
-	};
-
-	private ServiceConnection connection = new ServiceConnection() {
-		@Override
-		public void onServiceConnected(ComponentName name, IBinder service) {
-			iotService = IIotService.Stub.asInterface(service);
-			Log.d(TAG, "connect iot");
-			if (iotService == null) {
-				Log.e(TAG, "cannot connect");
-			}
-		}
-
-		@Override
-		public void onServiceDisconnected(ComponentName name) {
-			iotService = null;
-			Log.d(TAG, "disconnect iot");
 		}
 	};
 
@@ -140,9 +112,6 @@ public class RemoteLightActivity extends Activity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		Log.d(TAG, "creating");
-		bindService(new Intent(RemoteLightActivity.this, IotService.class),
-				connection, Context.BIND_AUTO_CREATE);
-		Log.d(TAG, "connection bound");
 		setContentView(R.layout.main);
 		findViews();
 		setListeners();
@@ -162,7 +131,6 @@ public class RemoteLightActivity extends Activity {
 		super.onDestroy();
 		iotHandler.removeCallbacks(mRun); // not necessary
 		iotHandlerThread.quit();
-		unbindService(connection);
 		Log.d(TAG, "disconnected");
 	}
 
