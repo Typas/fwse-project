@@ -21,7 +21,7 @@ public class Iot {
 	public static final int PACKET_LEN = 256; // randomly set
 
 	public static boolean open() {
-		Log.i(TAG, "Go to get Iot Stub...");
+		Log.i(TAG, "Opening...");
 		try {
 			BluetoothServer.init();
 			BluetoothServer.join();

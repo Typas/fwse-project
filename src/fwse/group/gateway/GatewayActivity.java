@@ -1,5 +1,7 @@
 package fwse.group.gateway;
 
+import java.io.IOException;
+
 import fwse.group.gateway.Iot;
 import fwse.group.gateway.R;
 import android.app.Activity;
