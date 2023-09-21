@@ -14,7 +14,7 @@ public class BluetoothClient {
 	private static BluetoothDevice btDevice;
 	private static BluetoothSocket btSocket;
 	// XXX: hard coded address, should use pairing mechanism
-	private static final String remoteAddress = "0021:11:016E0B";
+	private static final String remoteAddress = "00:21:11:01:76:ED";
 	private static final UUID uuid = UUID
 			.fromString("00001101-0000-1000-8000-00805F9B34FB"); // HC-05 UUID
 	private static OutputStream outputStream = null;
@@ -66,7 +66,8 @@ public class BluetoothClient {
 	public static void leave() throws IOException {
 		if (btSocket == null)
 			throw new IOException("no opened socket");
-		btSocket.close();
+		if (btSocket.isConnected())
+			btSocket.close();
 		outputStream = null;
 		inputStream = null;
 	}
