@@ -53,19 +53,20 @@ int bt_close(void) {
     return 0;
 }
 
-ssize_t bt_read(int *ch) {
+ssize_t bt_read(void *buffer, size_t nbyte) {
     /* return read(fd, &ch, sizeof(int)); */
+    /* TODO: limit nbyte? */
     if (status < 0)
         return status;
-    status = read(sock, ch, sizeof(int));
+    status = read(sock, buffer, nbyte);
     return status;
 }
 
-ssize_t bt_write(const void *buffer, size_t count) {
+ssize_t bt_write(const void *buffer, size_t nbyte) {
     /* return write(fd, buffer, count); */
     if (status < 0)
         return status;
-    status = write(sock, buffer, count);
+    status = write(sock, buffer, nbyte);
     return status;
 }
 

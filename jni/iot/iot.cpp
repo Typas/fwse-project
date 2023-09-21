@@ -58,18 +58,12 @@ static jboolean iot_leave(JNIEnv *env, jobject thiz) {
 }
 
 static jboolean iot_recv(JNIEnv *env, jobject thiz, jbyteArray jbuffer) {
-    size_t read_bytes = 0;
+    ssize_t read_bytes = 0;
     jbyte *jbuf = env->GetByteArrayElements(jbuffer, NULL);
-    char *buf = (char *)jbuf;
+    char *buf = (char *)jbuf; /* XXX: need a proper way to modify buffer from java */
     size_t len = env->GetArrayLength(jbuffer);
-    int single_buf;
-    for (read_bytes = 0; read_bytes < len; ++read_bytes) {
-        if (bt_read(&single_buf) < 0) {
-            buf[read_bytes] = '\0';
-            break;
-        }
-        buf[read_bytes] = single_buf;
-    }
+
+    read_bytes = bt_read(buf, len);
     env->ReleaseByteArrayElements(jbuffer, jbuf, 0);
 
     if (read_bytes > 0) {

@@ -13,18 +13,19 @@ int bt_open(void);
 /* negative number if error happens */
 int bt_close(void);
 /* @param */
-/* ch - the buffer character address */
+/* buffer - the buffer character address */
+/* nbyte - the number of bytes needs to be sent */
 /* @return */
 /* total size get */
 /* -1 if error happens */
-ssize_t bt_read(int* ch);
+ssize_t bt_read(void *buffer, size_t nbyte);
 /* @param */
 /* buffer - the buffer that stores the data */
-/* count - the number of bytes needs to be sent */
+/* nbyte - the number of bytes needs to be sent */
 /* @return */
 /* total size sent */
 /* -1 if error happens */
-ssize_t bt_write(const void *buffer, size_t count);
+ssize_t bt_write(const void *buffer, size_t nbyte);
 /* nop */
 int bt_join(void);
 /* nop */
