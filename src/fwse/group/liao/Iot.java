@@ -17,19 +17,11 @@ import fwse.group.liao.BluetoothClient;
 
 public class Iot {
 	private static final String TAG = "Iot";
-//	static {
-//		try {
-//			Log.i("JNI", "Trying to load libiot.so");
-//			System.loadLibrary("iot");
-//		} catch (UnsatisfiedLinkError ule) {
-//			Log.e("JNI", "WARNING: Could not load libiot.so");
-//		}
-//	}
 
 	public static final int PACKET_LEN = 256; // randomly set
 
 	public static boolean open() {
-		Log.i(TAG, "Go to get Iot Stub...");
+		Log.i(TAG, "Opening IoT net...");
 		try {
 			BluetoothClient.init();
 			BluetoothClient.join();
@@ -37,10 +29,6 @@ public class Iot {
 			return false;
 		}
 		return true;
-//		if (_init() == false) {
-//			return false;
-//		}
-//		return _join();
 	}
 
 	public static boolean close() {
@@ -52,10 +40,6 @@ public class Iot {
 			return false;
 		}
 		return true;
-//		if (_leave() == false) {
-//			return false;
-//		}
-//		return _exit();
 	}
 
 	public static void send(Bundle bundle) throws IOException {
@@ -63,30 +47,18 @@ public class Iot {
 		String str = Utility.serializeBundle(bundle);
 		byte[] buffer = str.getBytes("UTF-8");
 		// FIXME: need to limit size
-		BluetoothClient.send(buffer);
 		/* send data with packets */
-//		if (_send(buffer) == false) {
-//			throw new IOException();
-//		}
+		BluetoothClient.send(buffer);
 	}
 
 	public static Bundle receive() throws IOException {
 		Log.i(TAG, "Receiving bytes");
-//		boolean ret = false;
 		/* receive data with packets */
 		String str = new String();
 		byte[] buffer = new byte[PACKET_LEN];
 		// FIXME: need to limit size
 		BluetoothClient.receive(buffer);
 		str = new String(buffer, Charset.forName("UTF-8"));
-//		while (_recv(buffer) == true) {
-//			ret = true;
-//			str += new String(buffer, Charset.forName("UTF-8"));
-//		}
-//
-//		if (ret == false) {
-//			throw new IOException();
-//		}
 		return Utility.deserializeBundle(str);
 	}
 
@@ -99,7 +71,6 @@ public class Iot {
 			return false;
 		} 
 		return true;
-//		return _join();
 	}
 
 	public static boolean leave() {
@@ -111,7 +82,6 @@ public class Iot {
 			return false;
 		} 
 		return true;
-//		return _leave();
 	}
 //  /* useless in Android, cannot guarantee to have bluetooth in every Android device */
 //	/* private methods link to jni */

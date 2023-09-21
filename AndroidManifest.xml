@@ -22,10 +22,6 @@
             </intent-filter>
         </activity>
 
-        <service
-            android:name=".IotService"
-            android:enabled="true" >
-        </service>
     </application>
 
 </manifest>
