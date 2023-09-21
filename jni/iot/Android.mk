@@ -50,6 +50,8 @@ LOCAL_STATIC_LIBRARIES :=
 # Also need the JNI headers.
 LOCAL_C_INCLUDES += \
 	$(JNI_H_INCLUDE) 
+# dirty thing
+LOCAL_C_INCLUDES += /root/android_4.0.4_dma4412L/external/bluetooth/bluez/lib
 
 # No specia compiler flags.
 LOCAL_CFLAGS +=

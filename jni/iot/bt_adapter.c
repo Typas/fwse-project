@@ -22,7 +22,7 @@ int bt_open(void) {
     }
     // set the connection parameters
     remote.rc_family = AF_BLUETOOTH;
-    remote.channel = (uint8_t)1;
+    remote.rc_channel = (uint8_t)1;
     str2ba(remote_addr, &remote.rc_bdaddr);
 
     /* int ret; */

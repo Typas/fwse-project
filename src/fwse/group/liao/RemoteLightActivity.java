@@ -11,7 +11,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
+import android.os.Message;
 import android.os.RemoteException;
 import android.util.Log;
 import android.view.View;
@@ -24,7 +27,8 @@ public class RemoteLightActivity extends Activity {
     public final int CMD_RELAY_ON = 1;
 	private IIotService iotService = null;
 	private final String TAG = "RemoteLightActivity";
-    private final int READ_INTERVAL = 100; // in ms
+    private final int READ_INTERVAL = 100; // in milliseconds
+    private boolean isOn = false;
     private Button on, off;
     private final Handler mUIHandler = new Handler(Looper.getMainLooper()) {
         @Override
@@ -42,29 +46,37 @@ public class RemoteLightActivity extends Activity {
         public void run() {
             try {
                 Bundle data = iotService.receive();
+                Bundle echo = new Bundle();
                 int cmd = data.getInt("CMD");
+                int retry = 0;
                 switch (cmd) {
                     case CMD_RELAY_OFF:
-                        int retry = 0;
                         while(!relayCtrl(false)) {
                             retry += 1;
-                            sleep(10);
+                            Thread.sleep(10);
                             if (retry > 10) {
                                 Log.e(TAG, "cannot turn off relay");
                                 break;
                             }
                         }
+                        isOn = (retry <= 10) ? false : isOn;
+                        echo.putBoolean("SUCCESS", retry <= 10);
+                        echo.putBoolean("INFO", isOn);
+                        iotService.send(echo);
                         break;
                     case CMD_RELAY_ON:
-                        int retry = 0;
                         while(!relayCtrl(true)) {
                             retry += 1;
-                            sleep(10);
+                            Thread.sleep(10);
                             if (retry > 10) {
                                 Log.e(TAG, "cannot turn on relay");
                                 break;
                             }
                         }
+                        isOn = (retry <= 10) ? true : isOn;
+                        echo.putBoolean("SUCCESS", retry <= 10);
+                        echo.putBoolean("INFO", isOn);
+                        iotService.send(echo);
                         break;
                     default:
                         break;
@@ -114,13 +126,13 @@ public class RemoteLightActivity extends Activity {
 		setContentView(R.layout.main);
         findViews();
         setListeners();
-        handler.postDelayed(mRun, READ_INTERVAL);
+        mUIHandler.postDelayed(mRun, READ_INTERVAL);
 	}
 
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
-        handler.removeCallbacks(mRun); // not necessary
+        mUIHandler.removeCallbacks(mRun); // not necessary
 		unbindService(connection);
 		Log.d(TAG, "disconnected");
 	}

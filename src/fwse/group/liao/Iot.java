@@ -13,83 +13,119 @@ import android.os.Parcel;
 import android.util.Base64;
 import android.util.Log;
 
-public class Iot {
-	static {
-		try {
-			Log.i("JNI", "Trying to load libiot.so");
-			System.loadLibrary("iot");
-		} catch (UnsatisfiedLinkError ule) {
-			Log.e("JNI", "WARNING: Could not load libiot.so");
-		}
-	}
+import fwse.group.liao.BluetoothClient;
 
-	public static final int PACKET_LEN = 64;
+public class Iot {
+	private static final String TAG = "Iot";
+//	static {
+//		try {
+//			Log.i("JNI", "Trying to load libiot.so");
+//			System.loadLibrary("iot");
+//		} catch (UnsatisfiedLinkError ule) {
+//			Log.e("JNI", "WARNING: Could not load libiot.so");
+//		}
+//	}
+
+	public static final int PACKET_LEN = 256; // randomly set
 
 	public static boolean open() {
-		Log.i("IotService", "Go to get Iot Stub...");
-		if (_init() == false) {
+		Log.i(TAG, "Go to get Iot Stub...");
+		try {
+			BluetoothClient.init();
+			BluetoothClient.join();
+		} catch (IOException e) {
 			return false;
 		}
-		return _join();
+		return true;
+//		if (_init() == false) {
+//			return false;
+//		}
+//		return _join();
 	}
 
 	public static boolean close() {
-		Log.i("IotService", "Shutting down");
-		if (_leave() == false) {
+		Log.i(TAG, "Shutting down");
+		try {
+			BluetoothClient.leave();
+			BluetoothClient.exit();
+		} catch (IOException e) {
 			return false;
 		}
-		return _exit();
+		return true;
+//		if (_leave() == false) {
+//			return false;
+//		}
+//		return _exit();
 	}
 
 	public static void send(Bundle bundle) throws IOException {
-		Log.i("IotService", "Sending bytes");
+		Log.i(TAG, "Sending bytes");
 		String str = Utility.serializeBundle(bundle);
 		byte[] buffer = str.getBytes("UTF-8");
+		// FIXME: need to limit size
+		BluetoothClient.send(buffer);
 		/* send data with packets */
-		if (_send(buffer) == false) {
-			throw new IOException();
-		}
+//		if (_send(buffer) == false) {
+//			throw new IOException();
+//		}
 	}
 
 	public static Bundle receive() throws IOException {
-		Log.i("IotService", "Receiving bytes");
-		boolean ret = false;
+		Log.i(TAG, "Receiving bytes");
+//		boolean ret = false;
+		/* receive data with packets */
 		String str = new String();
 		byte[] buffer = new byte[PACKET_LEN];
-		/* receive data with packets */
-		while (_recv(buffer) == true) {
-			ret = true;
-			str += new String(buffer, Charset.forName("UTF-8"));
-		}
-
-		if (ret == false) {
-			throw new IOException();
-		}
+		// FIXME: need to limit size
+		BluetoothClient.receive(buffer);
+		str = new String(buffer, Charset.forName("UTF-8"));
+//		while (_recv(buffer) == true) {
+//			ret = true;
+//			str += new String(buffer, Charset.forName("UTF-8"));
+//		}
+//
+//		if (ret == false) {
+//			throw new IOException();
+//		}
 		return Utility.deserializeBundle(str);
 	}
 
 	public static boolean join() {
-		Log.i("IotService", "Try to join the net");
-		return _join();
+		Log.i(TAG, "Try to join the net");
+		try {
+			BluetoothClient.join();
+		} catch (IOException e) {
+			Log.e(TAG, "Cannot join the net");
+			return false;
+		} 
+		return true;
+//		return _join();
 	}
 
 	public static boolean leave() {
-		Log.i("IotService", "Leave the net");
-		return _leave();
+		Log.i(TAG, "Leave the net");
+		try {
+			BluetoothClient.leave();
+		} catch (IOException e) {
+			Log.e(TAG, "what happened when leaving the net?!");
+			return false;
+		} 
+		return true;
+//		return _leave();
 	}
-
-	/* private methods link to jni */
-	private static native boolean _init();
-
-	private static native boolean _exit();
-
-	private static native boolean _send(byte[] buffer);
-
-	private static native boolean _recv(byte[] buffer);
-
-	private static native boolean _join();
-
-	private static native boolean _leave();
+//  /* useless in Android, cannot guarantee to have bluetooth in every Android device */
+//	/* private methods link to jni */
+//	private static native boolean _init();
+//
+//	private static native boolean _exit();
+//
+//	private static native boolean _send(byte[] buffer);
+//
+//	private static native boolean _recv(byte[] buffer);
+//
+//	private static native boolean _join();
+//
+//	private static native boolean _leave();
 }
 
 class Utility {
