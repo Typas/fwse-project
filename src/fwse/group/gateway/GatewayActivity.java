@@ -1,18 +1,12 @@
 package fwse.group.gateway;
 
-import fwse.group.gateway.IIotService;
+import fwse.group.gateway.Iot;
 import fwse.group.gateway.R;
 import android.app.Activity;
-import android.content.ComponentName;
-import android.content.Context;
-import android.content.Intent;
-import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
-import android.os.RemoteException;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -23,7 +17,6 @@ public class GatewayActivity extends Activity {
 	public final int CMD_RELAY_OFF = 0;
 	public final int CMD_RELAY_ON = 1;
 	public final int SEND_CMD = 3;
-	private IIotService iotService = null;
 	private final String TAG = "GatewayActivity";
 	private final int READ_INTERVAL = 100; // in milliseconds
 	private Button on, off;
@@ -34,8 +27,8 @@ public class GatewayActivity extends Activity {
 			switch (msg.what) {
 			case SEND_CMD:
 				try {
-					iotService.send(msg.getData());
-				} catch (RemoteException e) {
+					Iot.send(msg.getData());
+				} catch (IOException e) {
 					Log.e(TAG, "cannot send command");
 				}
 				break;
@@ -49,7 +42,7 @@ public class GatewayActivity extends Activity {
 		@Override
 		public void run() {
 			try {
-				Bundle data = iotService.receive();
+				Bundle data = Iot.receive();
 				boolean success = data.getBoolean("SUCCESS");
 				boolean isOn = data.getBoolean("INFO");
 				if (success) {
@@ -57,27 +50,11 @@ public class GatewayActivity extends Activity {
 				} else {
 					setTitle("Fail");
 				}
-			} catch (RemoteException e) {
+			} catch (IOException e) {
 				// nothing, just another lazy period
 			} catch (Exception e) {
 				Log.e(TAG, e.toString());
 			}
-		}
-	};
-	private ServiceConnection connection = new ServiceConnection() {
-		@Override
-		public void onServiceConnected(ComponentName name, IBinder service) {
-			iotService = IIotService.Stub.asInterface(service);
-			Log.d(TAG, "connect iot");
-			if (iotService == null) {
-				Log.e(TAG, "cannot connect");
-			}
-		}
-
-		@Override
-		public void onServiceDisconnected(ComponentName name) {
-			iotService = null;
-			Log.d(TAG, "disconnect iot");
 		}
 	};
 
@@ -96,11 +73,9 @@ public class GatewayActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
 		Log.d(TAG, "creating");
-		bindService(new Intent(GatewayActivity.this, IotService.class),
-				connection, Context.BIND_AUTO_CREATE);
-		Log.d(TAG, "connection bound");
 		findViews();
 		setListeners();
+        Iot.open();
 		mUIHandler.postDelayed(mRun, READ_INTERVAL);
 	}
 
@@ -108,8 +83,8 @@ public class GatewayActivity extends Activity {
 	public void onDestroy() {
 		super.onDestroy();
 		mUIHandler.removeCallbacks(mRun); // not necessary
-		unbindService(connection);
-		Log.d(TAG, "disconnected");
+        Iot.close();
+		Log.d(TAG, "destroyed");
 	}
 
 	private OnClickListener lightOnListener = new OnClickListener() {
