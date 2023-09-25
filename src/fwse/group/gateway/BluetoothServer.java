@@ -1,7 +1,7 @@
 package fwse.group.gateway;
 
 import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
 import android.util.Log;
 import java.util.UUID;
@@ -11,8 +11,9 @@ import java.io.OutputStream;
 
 public class BluetoothServer {
 	private static BluetoothAdapter btAdapter;
-	private static BluetoothDevice btDevice;
+	// XXX: should accept more clients
 	private static BluetoothSocket btSocket;
+	private static final String btName = "HC05_Master";
 	// XXX: hard coded address, should use pairing mechanism
 	// FIXME: should have a table for lookup
 	private static final String remoteAddress = "00:21:11:01:4A:88";
@@ -35,7 +36,7 @@ public class BluetoothServer {
 			btAdapter.enable();
 
 		Log.d(TAG, "Bluetooth adapter opened");
-		btDevice = btAdapter.getRemoteDevice(remoteAddress);
+		btAdapter.getRemoteDevice(remoteAddress);
 
 	}
 
@@ -57,11 +58,10 @@ public class BluetoothServer {
 	}
 
 	public static void join() throws IOException {
-		btSocket = btDevice.createRfcommSocketToServiceRecord(uuid);
+		BluetoothServerSocket btServerSocket = btAdapter.listenUsingInsecureRfcommWithServiceRecord(btName, uuid);
+		btSocket = btServerSocket.accept();
+		btServerSocket.close();
 		btAdapter.cancelDiscovery();
-		if (btSocket.isConnected())
-			btSocket.close();
-		btSocket.connect();
 		inputStream = btSocket.getInputStream();
 		outputStream = btSocket.getOutputStream();
 	}
