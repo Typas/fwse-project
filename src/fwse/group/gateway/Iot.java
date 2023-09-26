@@ -18,13 +18,13 @@ import fwse.group.gateway.BluetoothServer;
 public class Iot {
 	private static final String TAG = "Iot";
 
-	public static final int PACKET_LEN = 256; // randomly set
+	public static final int PACKET_LEN = 512; // randomly set
 
 	public static boolean open() {
 		Log.i(TAG, "Opening...");
 		try {
 			BluetoothServer.init();
-			BluetoothServer.join();
+			Log.d(TAG, "initialialized");
 		} catch (IOException e) {
 			return false;
 		}
@@ -34,7 +34,6 @@ public class Iot {
 	public static boolean close() {
 		Log.i(TAG, "Shutting down");
 		try {
-			BluetoothServer.leave();
 			BluetoothServer.exit();
 		} catch (IOException e) {
 			return false;

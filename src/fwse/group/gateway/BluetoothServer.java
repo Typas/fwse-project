@@ -58,6 +58,7 @@ public class BluetoothServer {
 	}
 
 	public static void join() throws IOException {
+		btAdapter.startDiscovery();
 		BluetoothServerSocket btServerSocket = btAdapter.listenUsingInsecureRfcommWithServiceRecord(btName, uuid);
 		btSocket = btServerSocket.accept();
 		btServerSocket.close();

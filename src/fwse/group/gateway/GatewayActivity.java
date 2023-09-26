@@ -20,8 +20,10 @@ public class GatewayActivity extends Activity {
 	public final int CMD_RELAY_ON = 1;
 	public final int SEND_CMD = 3;
 	private final String TAG = "GatewayActivity";
-	private final int READ_INTERVAL = 100; // in milliseconds
+	private final int READ_INTERVAL = 300; // in milliseconds
+	private final int RETRY_INTERVAL = 1000; // in milliseconds
 	private Button on, off;
+	private boolean connected = false;
 	private final Handler mUIHandler = new Handler(Looper.getMainLooper()) {
 		@Override
 		public void handleMessage(Message msg) {
@@ -43,6 +45,13 @@ public class GatewayActivity extends Activity {
 	private final Runnable mRun = new Runnable() {
 		@Override
 		public void run() {
+			if (!connected) {
+				if (!Iot.join()) {
+					mUIHandler.postDelayed(mRun, RETRY_INTERVAL);
+					return;
+				}
+				connected = true;
+			}
 			try {
 				Bundle data = Iot.receive();
 				boolean success = data.getBoolean("SUCCESS");
@@ -56,6 +65,8 @@ public class GatewayActivity extends Activity {
 				// nothing, just another lazy period
 			} catch (Exception e) {
 				Log.e(TAG, e.toString());
+			} finally {
+				mUIHandler.postDelayed(mRun, READ_INTERVAL);
 			}
 		}
 	};
@@ -77,7 +88,10 @@ public class GatewayActivity extends Activity {
 		Log.d(TAG, "creating");
 		findViews();
 		setListeners();
-        Iot.open();
+        if (!Iot.open()) {
+        	Log.e(TAG, "cannot open iot net");
+			finish(); // XXX: let it explode
+        }
 		mUIHandler.postDelayed(mRun, READ_INTERVAL);
 	}
 
