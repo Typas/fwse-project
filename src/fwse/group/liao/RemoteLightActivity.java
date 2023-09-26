@@ -22,8 +22,10 @@ public class RemoteLightActivity extends Activity {
 	public final int CMD_RELAY_ON = 1;
 	private final String TAG = "RemoteLightActivity";
 	private final int READ_INTERVAL = 300; // in milliseconds
+	private final int RETRY_INTERVAL = 1000; // in milliseconds
 	private boolean isOn = false;
 	private Button on, off;
+	private boolean connected = false;
 	private HandlerThread iotHandlerThread = new HandlerThread("IotHT");
 	private Handler iotHandler;
 	private Handler mUIHandler = new Handler(Looper.getMainLooper()) {
@@ -46,6 +48,13 @@ public class RemoteLightActivity extends Activity {
 	private Runnable mRun = new Runnable() {
 		@Override
 		public void run() {
+			if (!connected) {
+				if (!Iot.join()) {
+					iotHandler.postDelayed(mRun, RETRY_INTERVAL);
+					return;
+				}
+				connected = true;
+			}
 			try {
 				Log.d(TAG, "run(): start loop run");
 				Bundle data = Iot.receive();
@@ -94,6 +103,8 @@ public class RemoteLightActivity extends Activity {
 				Log.d(TAG, "End one run in no get state");
 			} catch (Exception e) {
 				Log.e(TAG, e.toString());
+			} finally {
+				iotHandler.postDelayed(mRun, READ_INTERVAL);
 			}
 		}
 	};
@@ -115,6 +126,10 @@ public class RemoteLightActivity extends Activity {
 		setContentView(R.layout.main);
 		findViews();
 		setListeners();
+		if (!Iot.open()) {
+			Log.e(TAG, "fail to open IoT");
+			finish(); // XXX: let it explode
+		}
 		iotHandlerThread.start();
 		iotHandler = new Handler(iotHandlerThread.getLooper()) {
 			@Override
@@ -131,6 +146,7 @@ public class RemoteLightActivity extends Activity {
 		super.onDestroy();
 		iotHandler.removeCallbacks(mRun); // not necessary
 		iotHandlerThread.quit();
+		Iot.close();
 		Log.d(TAG, "disconnected");
 	}
 

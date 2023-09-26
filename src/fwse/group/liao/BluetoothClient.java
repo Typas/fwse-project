@@ -56,11 +56,15 @@ public class BluetoothClient {
 	}
 
 	public static void join() throws IOException {
-		btSocket = btDevice.createRfcommSocketToServiceRecord(uuid);
+		btAdapter.startDiscovery();
+		btSocket = btDevice.createInsecureRfcommSocketToServiceRecord(uuid);
+		Log.d(TAG, "socket get");
 		btAdapter.cancelDiscovery();
 		btSocket.connect();
+		Log.d(TAG, "connected");
 		inputStream = btSocket.getInputStream();
 		outputStream = btSocket.getOutputStream();
+		Log.d(TAG, "Bluetooth adapter joined");
 	}
 
 	public static void leave() throws IOException {
