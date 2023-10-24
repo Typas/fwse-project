@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="hello">Hello World, GatewayActivity!</string>
+    <string name="app_name">Gateway</string>
+    <string name="power_on">Remote On</string>
+    <string name="power_off">Remote Off</string>
+
+</resources>
